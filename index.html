@@ -453,9 +453,13 @@
                 
                 // Neues API-Format: nur Spielername senden
                 const url = `${serverUrl}?player=${encodeURIComponent(culprit)}`;
-                await fetch(url, { method: 'GET', mode: 'no-cors' });
+                const response = await fetch(url, { method: 'GET' });
                 
-                showStatus('✅ Befehle erfolgreich gesendet!', 'success');
+                if (response.ok) {
+                    showStatus('✅ Befehle erfolgreich gesendet!', 'success');
+                } else {
+                    showStatus('❌ Server-Fehler! Check PC2-Script!', 'error');
+                }
             } catch (error) {
                 showStatus('❌ Fehler beim Senden der Befehle! (Server läuft nicht?)', 'error');
                 console.error(error);
