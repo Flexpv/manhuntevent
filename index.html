@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minecraft Manhunt - Verbotene Wörter Tracker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: white;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .subtitle {
+            text-align: center;
+            margin-bottom: 30px;
+            opacity: 0.9;
+            font-size: 1.1em;
+        }
+
+        .forbidden-words {
+            text-align: center;
+            background: rgba(255,255,255,0.1);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+
+        .forbidden-words strong {
+            color: #ff6b6b;
+        }
+
+        .teams {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .team {
+            background: rgba(255,255,255,0.15);
+            border-radius: 15px;
+            padding: 25px;
+            backdrop-filter: blur(10px);
+        }
+
+        .team-title {
+            text-align: center;
+            font-size: 1.5em;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        .player-container {
+            background: rgba(0,0,0,0.2);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+        }
+
+        .player-name {
+            font-size: 1.3em;
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .hunter {
+            color: #ff6b6b;
+        }
+
+        .runner {
+            color: #51cf66;
+        }
+
+        .hearts {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin: 15px 0;
+            min-height: 40px;
+        }
+
+        .heart {
+            font-size: 2em;
+            animation: heartbeat 1s ease-in-out;
+        }
+
+        @keyframes heartbeat {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        .heart-count {
+            text-align: center;
+            font-size: 1.2em;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+
+        .punish-btn {
+            width: 100%;
+            padding: 15px;
+            font-size: 1.1em;
+            font-weight: bold;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+        }
+
+        .punish-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        .punish-btn:active {
+            transform: translateY(0);
+            animation: shake 0.3s;
+        }
+
+        .hunter .punish-btn {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
+            color: white;
+        }
+
+        .runner .punish-btn {
+            background: linear-gradient(135deg, #51cf66 0%, #37b24d 100%);
+            color: white;
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 30px;
+        }
+
+        .control-btn {
+            padding: 12px 30px;
+            font-size: 1em;
+            font-weight: bold;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .reset-btn {
+            background: #868e96;
+            color: white;
+        }
+
+        .undo-btn {
+            background: #fab005;
+            color: white;
+        }
+
+        .control-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        .log {
+            background: rgba(0,0,0,0.3);
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 30px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .log-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            font-size: 1.2em;
+        }
+
+        .log-entry {
+            padding: 8px;
+            margin: 5px 0;
+            background: rgba(255,255,255,0.1);
+            border-radius: 5px;
+            font-size: 0.9em;
+        }
+
+        .status {
+            text-align: center;
+            padding: 10px;
+            margin-top: 20px;
+            border-radius: 8px;
+            font-weight: bold;
+        }
+
+        .status.success {
+            background: rgba(81, 207, 102, 0.3);
+        }
+
+        .status.error {
+            background: rgba(255, 107, 107, 0.3);
+        }
+
+        .settings {
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+
+        .settings-title {
+            font-weight: bold;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+
+        .setting-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 10px 0;
+        }
+
+        .setting-item label {
+            flex: 1;
+        }
+
+        .setting-item input[type="text"] {
+            padding: 8px;
+            border-radius: 5px;
+            border: none;
+            width: 200px;
+            font-size: 1em;
+        }
+
+        .setting-item input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        @media (max-width: 768px) {
+            .teams {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>⚔️ Minecraft Manhunt Tracker ⚔️</h1>
+        <div class="subtitle">Verbotene Wörter Challenge</div>
+        
+        <div class="forbidden-words">
+            <strong>VERBOTENE WÖRTER:</strong> ja, nein, nicht, ne, nei, no, not, fuck
+        </div>
+
+        <div class="settings">
+            <div class="settings-title">⚙️ Einstellungen</div>
+            <div class="setting-item">
+                <label>Server URL (PC2 IP):</label>
+                <input type="text" id="serverUrl" value="http://localhost:3000/punish" placeholder="http://192.168.1.X:3000/punish">
+            </div>
+            <div class="setting-item">
+                <label>🔊 Sound abspielen:</label>
+                <input type="checkbox" id="playSoundCheckbox" checked>
+            </div>
+            <div class="setting-item">
+                <label>🎮 Minecraft Sound senden:</label>
+                <input type="checkbox" id="minecraftSoundCheckbox" checked>
+            </div>
+        </div>
+
+        <div class="teams">
+            <!-- Team 1: Leon (Hunter) vs Thomas (Runner) -->
+            <div class="team">
+                <div class="team-title">🎯 Team 1</div>
+                
+                <div class="player-container hunter">
+                    <div class="player-name">🗡️ Leon (Hunter)</div>
+                    <div class="heart-count" id="TTVAnzgarCoM-count">10 Herzen</div>
+                    <div class="hearts" id="TTVAnzgarCoM-hearts"></div>
+                    <button class="punish-btn" onclick="punishPlayer('TTVAnzgarCoM')">
+                        Leon sagte verbotenes Wort!
+                    </button>
+                </div>
+
+                <div class="player-container runner">
+                    <div class="player-name">🏃 Julian (Runner)</div>
+                    <div class="heart-count" id="JohnnyRakete18-count">10 Herzen</div>
+                    <div class="hearts" id="JohnnyRakete18-hearts"></div>
+                    <button class="punish-btn" onclick="punishPlayer('JohnnyRakete18')">
+                        Julian sagte verbotenes Wort!
+                    </button>
+                </div>
+            </div>
+
+            <!-- Team 2: David (Hunter) vs Antom (Runner) -->
+            <div class="team">
+                <div class="team-title">🎯 Team 2</div>
+                
+                <div class="player-container hunter">
+                    <div class="player-name">🗡️ Leonard (Hunter)</div>
+                    <div class="heart-count" id="LeoRieg-count">10 Herzen</div>
+                    <div class="hearts" id="LeoRieg-hearts"></div>
+                    <button class="punish-btn" onclick="punishPlayer('LeoRieg')">
+                        Leonard sagte verbotenes Wort!
+                    </button>
+                </div>
+
+                <div class="player-container runner">
+                    <div class="player-name">🏃 Thomas (Runner)</div>
+                    <div class="heart-count" id="CLB_bennibooy-count">10 Herzen</div>
+                    <div class="hearts" id="CLB_bennibooy-hearts"></div>
+                    <button class="punish-btn" onclick="punishPlayer('CLB_bennibooy')">
+                        Thomas sagte verbotenes Wort!
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="control-btn undo-btn" onclick="undoLast()">↩️ Rückgängig</button>
+            <button class="control-btn reset-btn" onclick="resetGame()">🔄 Reset</button>
+        </div>
+
+        <div id="status" class="status" style="display: none;"></div>
+
+        <div class="log">
+            <div class="log-title">📜 Aktionsprotokoll</div>
+            <div id="log-content"></div>
+        </div>
+    </div>
+
+    <!-- Audio Element für Custom Sound -->
+    <audio id="punishSound" preload="auto">
+        <source src="sound.m4a" type="audio/mp4">
+    </audio>
+
+    <script>
+        // Spieler-Konfiguration
+        const players = {
+            TTVAnzgarCoM: { hearts: 10, partner: 'JohnnyRakete18', role: 'Hunter', displayName: 'Leon' },
+            JohnnyRakete18: { hearts: 10, partner: 'TTVAnzgarCoM', role: 'Runner', displayName: 'Julian' },
+            LeoRieg: { hearts: 10, partner: 'CLB_bennibooy', role: 'Hunter', displayName: 'Leonard' },
+            CLB_bennibooy: { hearts: 10, partner: 'LeoRieg', role: 'Runner', displayName: 'Thomas' }
+        };
+
+        let history = [];
+
+        // Initialisierung
+        function init() {
+            updateAllHearts();
+            addLog('🎮 Spiel gestartet! Viel Erfolg!');
+            
+            // Sound vorher laden
+            const audio = document.getElementById('punishSound');
+            audio.load();
+        }
+
+        // Herzen aktualisieren
+        function updateAllHearts() {
+            for (let player in players) {
+                updateHearts(player);
+            }
+        }
+
+        function updateHearts(player) {
+            const hearts = players[player].hearts;
+            const heartsDiv = document.getElementById(`${player}-hearts`);
+            const countDiv = document.getElementById(`${player}-count`);
+            
+            heartsDiv.innerHTML = '❤️'.repeat(hearts);
+            countDiv.textContent = `${hearts} ${hearts === 1 ? 'Herz' : 'Herzen'}`;
+        }
+
+        // Sound abspielen
+        function playPunishSound() {
+            const playSoundEnabled = document.getElementById('playSoundCheckbox').checked;
+            if (playSoundEnabled) {
+                const audio = document.getElementById('punishSound');
+                audio.currentTime = 0; // Von vorne starten
+                audio.play().catch(e => console.log('Sound konnte nicht abgespielt werden:', e));
+            }
+        }
+
+        // Bestrafung ausführen
+        async function punishPlayer(culprit) {
+            const partner = players[culprit].partner;
+            const culpritHearts = players[culprit].hearts;
+            const partnerHearts = players[partner].hearts;
+
+            // Minimum 1 Herz check
+            if (culpritHearts <= 1) {
+                showStatus(`${players[culprit].displayName} hat bereits nur 1 Herz! Keine weitere Bestrafung möglich.`, 'error');
+                return;
+            }
+
+            // Sound abspielen
+            playPunishSound();
+
+            // Aktion in History speichern
+            history.push({
+                culprit: culprit,
+                partner: partner,
+                culpritBefore: culpritHearts,
+                partnerBefore: partnerHearts
+            });
+
+            // Herzen ändern
+            players[culprit].hearts -= 1;
+            players[partner].hearts += 1;
+
+            // UI aktualisieren
+            updateHearts(culprit);
+            updateHearts(partner);
+
+            // Minecraft Befehle senden
+            const role = players[culprit].role;
+            const displayName = players[culprit].displayName;
+            const partnerDisplayName = players[partner].displayName;
+            addLog(`⚠️ ${displayName} (${role}) sagte verbotenes Wort! -1 Herz → ${partnerDisplayName} +1 Herz`);
+            
+            try {
+                const serverUrl = document.getElementById('serverUrl').value;
+                
+                // Neues API-Format: nur Spielername senden
+                const url = `${serverUrl}?player=${encodeURIComponent(culprit)}`;
+                await fetch(url, { method: 'GET', mode: 'no-cors' });
+                
+                showStatus('✅ Befehle erfolgreich gesendet!', 'success');
+            } catch (error) {
+                showStatus('❌ Fehler beim Senden der Befehle! (Server läuft nicht?)', 'error');
+                console.error(error);
+            }
+        }
+
+        // Minecraft Befehl senden
+        async function sendCommand(serverUrl, cmd) {
+            const url = `${serverUrl}?c=${encodeURIComponent(cmd)}`;
+            const response = await fetch(url, { 
+                method: 'GET',
+                mode: 'no-cors' // Wichtig für localhost/LAN
+            });
+            // Kurze Pause zwischen Befehlen
+            await new Promise(resolve => setTimeout(resolve, 100));
+            return response;
+        }
+
+        // Letzte Aktion rückgängig machen
+        function undoLast() {
+            if (history.length === 0) {
+                showStatus('Keine Aktion zum Rückgängig machen!', 'error');
+                return;
+            }
+
+            const last = history.pop();
+            players[last.culprit].hearts = last.culpritBefore;
+            players[last.partner].hearts = last.partnerBefore;
+
+            updateHearts(last.culprit);
+            updateHearts(last.partner);
+
+            addLog(`↩️ Rückgängig: ${players[last.culprit].displayName} Bestrafung wurde zurückgenommen`);
+            showStatus('↩️ Letzte Aktion rückgängig gemacht!', 'success');
+        }
+
+        // Spiel zurücksetzen
+        function resetGame() {
+            if (!confirm('Wirklich alle Herzen auf 10 zurücksetzen?')) return;
+
+            for (let player in players) {
+                players[player].hearts = 10;
+            }
+            history = [];
+            
+            updateAllHearts();
+            document.getElementById('log-content').innerHTML = '';
+            addLog('🔄 Spiel wurde zurückgesetzt!');
+            showStatus('🔄 Alle Herzen zurückgesetzt!', 'success');
+        }
+
+        // Status anzeigen
+        function showStatus(message, type) {
+            const statusDiv = document.getElementById('status');
+            statusDiv.textContent = message;
+            statusDiv.className = `status ${type}`;
+            statusDiv.style.display = 'block';
+            
+            setTimeout(() => {
+                statusDiv.style.display = 'none';
+            }, 3000);
+        }
+
+        // Log hinzufügen
+        function addLog(message) {
+            const logContent = document.getElementById('log-content');
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            const time = new Date().toLocaleTimeString('de-DE');
+            entry.textContent = `[${time}] ${message}`;
+            logContent.insertBefore(entry, logContent.firstChild);
+        }
+
+        // Bei Start
+        init();
+    </script>
+</body>
+</html>
